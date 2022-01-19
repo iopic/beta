@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Data Dashboard</title>
+</head>
+<link rel='stylesheet' href="{{url_for('static',filename='css/jquery.dataTables.min.css')}}">
+<script src="{{url_for('static',filename='js/d3.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/jquery-1.11.1.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery.dataTables.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/jquery.dataTables.buttons.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/jszip.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/pdfmake.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/vfs_font.js')}}"></script>
+<script src="{{ url_for('static', filename='js/buttons.html5.min.js')}}"></script>
+
+<div id="display_table_can">
+    <table class="cell-border" id="table_elm">
+      <thead>
+        <tr>
+          {% for column in columns %}
+            <th>{{ column }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+    </table>
+  </div>
+
+<script>
+  $(document).ready(function() {
+    $('table_elm').DataTable( {
+        dom: 'Bfrtip',
+        buttons: [
+            'copy', 'csv', 'excel'
+        ]
+    } );
+} );
+</script>
+
+  <script>
+// set table as DataTable
+var display_table = $('#display_table_can').find('table').DataTable({
+    deferRender: true,
+    dom: 'Bfrtip',
+    buttons: [
+            'copy', 'csv', 'excel'
+        ]
+});
+
+function loadTable() {
+    $.get('table_display', function(response, status){
+        var data = JSON.parse({{ rows | safe }});
+        display_table.clear();
+
+        Object.keys(data).forEach(function(key) {
+            // fill row
+            row = data[key]
+
+            // append to table
+            display_table.row.add(row);
+        });
+
+        // Update table -- make rows visible.
+        display_table.draw();
+    });
+}
+
+//execute function
+loadTable();
+console.log(display_table.rows( { filter : 'applied'} ).nodes().length);
+console.log(display_table.rows( { filter : 'applied'} ).data());
+  </script>
+
+<body>
+    <h3>
+      Go back to main
+    </h3>
+    <a href={{ url_for('upload_file') }}>Main</a>
+    </body>

@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Data Dashboard</title>
+</head>
+<script src="{{url_for('static',filename='js/d3.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/jquery-1.11.1.min.js') }}"></script>
+
+<!--<script src="{{ url_for('static', filename='js/jplotly-2.8.3min.js') }}"></script>-->
+<!-- import plugin script -->
+<script src="static/js/Chart.min.js"></script>
+
+
+<!--   Form for file upload  "" -->
+<form action="" method="post" name="simple" enctype="multipart/form-data">
+   <p>
+      Upload a file please!
+      <br>
+      {{ form.hidden_tag() }}
+        {{ form.document}}
+        <br>
+
+    </p>
+    <p>
+      Where to save transformed file
+      <br>
+      {{ form.hidden_tag() }}
+        {{ form.result_path}}
+        <br>
+
+    </p>
+   <p><input type="submit" value="Submit"></p>
+</form>
+<!-- Indicator of what data is loaded-->
+Last file uploaded
+{{ filename }}
+
+<!-- See data, link to table-->
+<body>
+   <h3>
+     Click below to see charts
+   </h3>
+   <a href={{ url_for('table_display') }}>Data table</a>
+   </body>
+<!-- dropdown for selector-->
+<div class="container">
+<div class="col-xs-3">
+   <br>
+   <label> Choose the chart title</label>
+   <select class="form-control" id ='first_cat', onchange="updateChart()">
+      {% for key in headers %}
+       <option value="{{ key }}">{{ key }}</option>
+       {% endfor %}
+   </select>
+   <br>
+   <br>
+   <label> Choose chart type</label>
+   <select class="form-control" id ='chart_type', onchange="updateChart()">
+  
+       <option value="line">line</option>
+       <option value="bar">bar</option>
+
+   </select>
+</div>
+
+
+<!-- must load this after the selector is defined, or else won't run-->
+<!--<script src="{{ url_for('static', filename='js/plots.js') }}"></script>-->
+
+
+</div>
+
+<!-- Chart.js chart -->
+<h1>Simple Line Chart Dummy</h1>
+<!-- bar chart canvas element -->
+<canvas id="myChart" width="600" height="400"></canvas>
+<p id="caption">The chart is displaying a simple line chart.</p>
+<script>
+// Global parameters:
+// do not resize the chart canvas when its container does (keep at 600x400px)
+Chart.defaults.global.responsive = false;
+ 
+// define the chart data
+var chartData = {
+labels : [{% for item in labels %}
+"{{item}}",
+{% endfor %}],
+datasets : [{
+label: document.getElementById('first_cat').value,
+fill: true,
+lineTension: 0.1,
+backgroundColor: "rgba(75,192,192,0.4)",
+borderColor: "rgba(75,192,192,1)",
+borderCapStyle: 'butt',
+borderDash: [],
+borderDashOffset: 0.0,
+borderJoinStyle: 'miter',
+pointBorderColor: "rgba(75,192,192,1)",
+pointBackgroundColor: "#fff",
+pointBorderWidth: 1,
+pointHoverRadius: 5,
+pointHoverBackgroundColor: "rgba(75,192,192,1)",
+pointHoverBorderColor: "rgba(220,220,220,1)",
+pointHoverBorderWidth: 2,
+pointRadius: 1,
+pointHitRadius: 10,
+data : [{% for item in values %}
+{{item}},
+{% endfor %}],
+spanGaps: false
+}]
+}
+// get chart canvas
+var ctx = document.getElementById("myChart").getContext("2d");
+ 
+// create the chart using the chart canvas
+var myChart = new Chart(ctx, {
+type: document.getElementById('chart_type').value,
+data: chartData,
+// used options to create custom tooltips function
+options: {
+   title: {
+                display: true,
+                text: document.getElementById('first_cat').value
+            },
+   tooltips: {
+      enabled: true,
+      mode: 'single',
+      callbacks: {
+         label: function(tooltipItems, data) {
+         return tooltipItems.yLabel + ' degrees';
+         }
+      }
+      },
+}
+});
+
+//updates chart title and type upon selections
+function updateChart() {
+      //save existing chart data and options
+      var mydata = myChart.data
+      var myopts = myChart.options
+
+      //get the updated values per dropdowns
+      myopts.title.text = document.getElementById('first_cat').value
+      var newtype = document.getElementById('chart_type').value
+      
+      // must delete original first
+     myChart.destroy();
+
+     //then rebulild with new values
+      myChart = new Chart(ctx, {
+				type: newtype,  // Select chart type from dropdown
+					data: mydata,
+               options: myopts
+				});
+
+			};
+
+</script>
